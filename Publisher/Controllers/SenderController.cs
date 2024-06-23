@@ -1,6 +1,6 @@
-﻿using MassTransit;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Publisher.Services;
 using Shared.Configurations;
 using Shared.Messages;
 
@@ -10,13 +10,11 @@ namespace Publisher.Controllers
     [ApiController]
     public class SenderController : ControllerBase
     {
-        private readonly IBus _bus;
-        private readonly IConfiguration _config;
+        private readonly IRabbitMQService _rabbitMQService;
 
-        public SenderController(IBus bus, IConfiguration config)
-        {
-            _bus = bus;
-            _config = config;
+        public SenderController(IRabbitMQService rabbitMQService)
+        {   
+            _rabbitMQService = rabbitMQService;
         }
 
         [HttpPost]
@@ -24,9 +22,7 @@ namespace Publisher.Controllers
         {
             try
             {
-                var rabbitMqConfiguration = _config.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
-                var endpoint = await _bus.GetSendEndpoint(new Uri($"exchange:{rabbitMqConfiguration.QueueName}"));
-                await endpoint.Send(message);
+                _rabbitMQService.Publish(message);
                 return Ok("Message sent successfully");
             }
             catch (Exception ex)

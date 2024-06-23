@@ -1,5 +1,5 @@
 
-using MassTransit;
+using Publisher.Services;
 using Shared.Configurations;
 
 namespace Publisher
@@ -18,22 +18,9 @@ namespace Publisher
             builder.Services.AddSwaggerGen();
 
             var rabbitMqConfig = builder.Configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
-            builder.Services.AddMassTransit(options =>
-            {
-                options.UsingRabbitMq((context, cfg) =>
-                {
-                    cfg.Host(rabbitMqConfig.Server, h =>
-                    {
-                        h.Username(rabbitMqConfig.Username);
-                        h.Password(rabbitMqConfig.Password);
-                    });
-                    cfg.ConfigureEndpoints(context);
-                    cfg.Exclusive = false;
-                    cfg.Durable = true;
-                    cfg.ConcurrentMessageLimit = 1;
-                });
-            });
 
+            builder.Services.AddSingleton(rabbitMqConfig);
+            builder.Services.AddScoped<IRabbitMQService, RabbitMQService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
