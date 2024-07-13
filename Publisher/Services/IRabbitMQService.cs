@@ -1,7 +1,9 @@
-﻿namespace Publisher.Services
+﻿using Shared.Messages;
+
+namespace Publisher.Services
 {
     public interface IRabbitMQService
     {
-        void Publish<T>(T message);
+        void Publish(CompetingConsumersMessage message);
     }
 }

@@ -18,7 +18,7 @@ namespace Publisher.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> SendMessage([FromBody] DemoMessage message)
+        public async Task<ActionResult> SendMessage([FromBody] CompetingConsumersMessage message)
         {
             try
             {

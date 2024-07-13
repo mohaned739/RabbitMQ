@@ -2,6 +2,7 @@
 using Shared.Configurations;
 using System.Text.Json;
 using System.Text;
+using Shared.Messages;
 
 namespace Publisher.Services
 {
@@ -21,7 +22,7 @@ namespace Publisher.Services
             };
         }
 
-        public void Publish<T>(T message)
+        public void Publish(CompetingConsumersMessage message)
         {
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
@@ -32,12 +33,16 @@ namespace Publisher.Services
                                  autoDelete: false,
                                  arguments: null);
 
-            var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
+            for (int i = 0; i < 5; i++)
+            {
+                message.Id = i;
+                var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: _configuration.QueueName,
-                                 basicProperties: null,
-                                 body: body);
+                channel.BasicPublish(exchange: "",
+                                     routingKey: _configuration.QueueName,
+                                     basicProperties: null,
+                                     body: body);
+            }
         }
     }
 }
