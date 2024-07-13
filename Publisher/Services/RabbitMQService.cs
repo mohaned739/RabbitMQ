@@ -26,16 +26,12 @@ namespace Publisher.Services
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.QueueDeclare(queue: _configuration.QueueName,
-                                 durable: false,
-                                 exclusive: false,
-                                 autoDelete: false,
-                                 arguments: null);
+            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Fanout);
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
-            channel.BasicPublish(exchange: "",
-                                 routingKey: _configuration.QueueName,
+            channel.BasicPublish(exchange: _configuration.ExchangeName,
+                                 routingKey: "",
                                  basicProperties: null,
                                  body: body);
         }

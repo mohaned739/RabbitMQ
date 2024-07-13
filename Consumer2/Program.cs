@@ -1,21 +1,19 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using Shared.Configurations;
 using System.Text;
 
-namespace Consumer1
+namespace Consumer2
 {
     internal class Program
     {
         static void Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-             .SetBasePath(AppContext.BaseDirectory)
-             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-             .Build();
+  .SetBasePath(AppContext.BaseDirectory)
+  .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+  .Build();
 
             var rabbitMQConfig = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
             var factory = new ConnectionFactory
@@ -32,21 +30,21 @@ namespace Consumer1
 
             var queueName = channel.QueueDeclare().QueueName;
 
-            channel.QueueBind(queue: queueName, exchange: 
-                rabbitMQConfig.ExchangeName, 
+            channel.QueueBind(queue: queueName, exchange:
+                rabbitMQConfig.ExchangeName,
                 routingKey: "",
                 arguments: null);
 
             var consumer = new EventingBasicConsumer(channel);
-                
+
             consumer.Received += (sender, args) =>
             {
                 var body = args.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"First Consumer: Message Recieved: {message}");
+                Console.WriteLine($"Second Consumer: Message Recieved: {message}");
             };
 
-            channel.BasicConsume(queue: queueName,autoAck: true, consumer: consumer);
+            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
             Console.ReadLine();
         }
