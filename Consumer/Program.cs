@@ -28,7 +28,7 @@ namespace Consumer1
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Direct);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Topic);
 
             var queueName = channel.QueueDeclare().QueueName;
 

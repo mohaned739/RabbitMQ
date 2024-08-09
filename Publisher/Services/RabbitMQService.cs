@@ -26,7 +26,7 @@ namespace Publisher.Services
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Direct);
+            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Topic);
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
