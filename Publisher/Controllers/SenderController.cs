@@ -18,11 +18,11 @@ namespace Publisher.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> SendMessage([FromBody] DemoMessage message)
+        public async Task<ActionResult> SendMessage([FromBody] DemoMessage message, string bindingKey)
         {
             try
             {
-                _rabbitMQService.Publish(message);
+                _rabbitMQService.Publish(message, bindingKey);
                 return Ok("Message sent successfully");
             }
             catch (Exception ex)

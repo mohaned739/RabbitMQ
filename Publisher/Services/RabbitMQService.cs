@@ -21,17 +21,17 @@ namespace Publisher.Services
             };
         }
 
-        public void Publish<T>(T message)
+        public void Publish<T>(T message,string routingKey)
         {
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Fanout);
+            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Direct);
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
             channel.BasicPublish(exchange: _configuration.ExchangeName,
-                                 routingKey: "",
+                                 routingKey: routingKey,
                                  basicProperties: null,
                                  body: body);
         }

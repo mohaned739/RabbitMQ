@@ -28,17 +28,14 @@ namespace Consumer1
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, type: ExchangeType.Fanout);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Direct);
 
             var queueName = channel.QueueDeclare().QueueName;
 
-            channel.QueueBind(queue: queueName, exchange: 
-                rabbitMQConfig.ExchangeName, 
-                routingKey: "",
-                arguments: null);
+            channel.QueueBind(queue: queueName, exchange: rabbitMQConfig.ExchangeName, routingKey: rabbitMQConfig.BindingKey);
 
             var consumer = new EventingBasicConsumer(channel);
-                
+
             consumer.Received += (sender, args) =>
             {
                 var body = args.Body.ToArray();
@@ -46,7 +43,7 @@ namespace Consumer1
                 Console.WriteLine($"First Consumer: Message Recieved: {message}");
             };
 
-            channel.BasicConsume(queue: queueName,autoAck: true, consumer: consumer);
+            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
 
             Console.ReadLine();
         }

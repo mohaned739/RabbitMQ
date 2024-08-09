@@ -26,14 +26,11 @@ namespace Consumer2
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, type: ExchangeType.Fanout);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Direct);
 
             var queueName = channel.QueueDeclare().QueueName;
 
-            channel.QueueBind(queue: queueName, exchange:
-                rabbitMQConfig.ExchangeName,
-                routingKey: "",
-                arguments: null);
+            channel.QueueBind(queue: queueName, exchange: rabbitMQConfig.ExchangeName, routingKey: rabbitMQConfig.BindingKey);
 
             var consumer = new EventingBasicConsumer(channel);
 
