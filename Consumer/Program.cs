@@ -28,11 +28,21 @@ namespace Consumer1
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Topic);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Headers);
 
             var queueName = channel.QueueDeclare().QueueName;
 
-            channel.QueueBind(queue: queueName, exchange: rabbitMQConfig.ExchangeName, routingKey: rabbitMQConfig.BindingKey);
+            var bindingArguments = new Dictionary<string, object>()
+            {
+                {"x-match", "all" },
+                {"name", "Mohaned" },
+                {"age", 25 }
+            };
+
+            channel.QueueBind(queue: queueName, exchange: 
+                rabbitMQConfig.ExchangeName, 
+                routingKey: "", 
+                arguments: bindingArguments);
 
             var consumer = new EventingBasicConsumer(channel);
 

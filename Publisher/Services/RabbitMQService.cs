@@ -2,6 +2,8 @@
 using Shared.Configurations;
 using System.Text.Json;
 using System.Text;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Channels;
 
 namespace Publisher.Services
 {
@@ -21,18 +23,23 @@ namespace Publisher.Services
             };
         }
 
-        public void Publish<T>(T message,string routingKey)
+        public void Publish<T>(T message)
         {
             using var connection = _factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Topic);
+            channel.ExchangeDeclare(exchange: _configuration.ExchangeName, type: ExchangeType.Headers);
 
             var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
+            var properties = channel.CreateBasicProperties();
+            properties.Headers = new Dictionary<string, object>() {
+                {"name","Mohaned" }
+            };
+
             channel.BasicPublish(exchange: _configuration.ExchangeName,
-                                 routingKey: routingKey,
-                                 basicProperties: null,
+                                 routingKey: "",
+                                 basicProperties: properties,
                                  body: body);
         }
     }
