@@ -6,16 +6,16 @@ using RabbitMQ.Client.Events;
 using Shared.Configurations;
 using System.Text;
 
-namespace Consumer1
+namespace Client
 {
     internal class Program
     {
         static void Main(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-             .SetBasePath(AppContext.BaseDirectory)
-             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-             .Build();
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .Build();
 
             var rabbitMQConfig = configuration.GetSection(nameof(RabbitMQConfiguration)).Get<RabbitMQConfiguration>();
             var factory = new ConnectionFactory
@@ -28,11 +28,9 @@ namespace Consumer1
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Direct);
+            var replyQueue = channel.QueueDeclare(queue: "", exclusive: true);
 
-            var queueName = channel.QueueDeclare().QueueName;
-
-            channel.QueueBind(queue: queueName, exchange: rabbitMQConfig.ExchangeName, routingKey: rabbitMQConfig.BindingKey);
+            channel.QueueDeclare(queue: rabbitMQConfig.QueueName, exclusive: false);
 
             var consumer = new EventingBasicConsumer(channel);
 
@@ -40,10 +38,21 @@ namespace Consumer1
             {
                 var body = args.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"First Consumer: Message Recieved: {message}");
+                Console.WriteLine($"Client Reply Recieved: {message}");
             };
 
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+            channel.BasicConsume(queue: replyQueue.QueueName, autoAck: true, consumer: consumer);
+
+            var properties = channel.CreateBasicProperties();
+            properties.ReplyTo = replyQueue.QueueName;
+            properties.CorrelationId = Guid.NewGuid().ToString();
+
+            var message = "Hey Code Meters";
+            var body = Encoding.UTF8.GetBytes(message);
+
+            Console.WriteLine($"Client Sending Request: {message}\n{properties.CorrelationId}");
+
+            channel.BasicPublish("", rabbitMQConfig.QueueName, properties, body);
 
             Console.ReadLine();
         }

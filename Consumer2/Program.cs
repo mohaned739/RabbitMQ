@@ -4,7 +4,7 @@ using RabbitMQ.Client.Events;
 using Shared.Configurations;
 using System.Text;
 
-namespace Consumer2
+namespace Server
 {
     internal class Program
     {
@@ -26,11 +26,8 @@ namespace Consumer2
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(exchange: rabbitMQConfig.ExchangeName, ExchangeType.Direct);
-
-            var queueName = channel.QueueDeclare().QueueName;
-
-            channel.QueueBind(queue: queueName, exchange: rabbitMQConfig.ExchangeName, routingKey: rabbitMQConfig.BindingKey);
+            
+            channel.QueueDeclare(queue: rabbitMQConfig.QueueName, exclusive: false);
 
             var consumer = new EventingBasicConsumer(channel);
 
@@ -38,10 +35,14 @@ namespace Consumer2
             {
                 var body = args.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Second Consumer: Message Recieved: {message}");
+                Console.WriteLine($"Server: Recieved Request: {message}\n{args.BasicProperties.CorrelationId}");
+                var replyMessage = $"Reply: Hope you are enjoying this playlist\n{args.BasicProperties.CorrelationId}";
+                var replyBody = Encoding.UTF8.GetBytes(replyMessage);
+                channel.BasicPublish("", args.BasicProperties.ReplyTo, null, replyBody);
+
             };
 
-            channel.BasicConsume(queue: queueName, autoAck: true, consumer: consumer);
+            channel.BasicConsume(queue: rabbitMQConfig.QueueName, autoAck: true, consumer: consumer);
 
             Console.ReadLine();
         }

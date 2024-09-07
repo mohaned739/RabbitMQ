@@ -11,7 +11,6 @@ namespace Shared.Configurations
         public string Server { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
-        public string ExchangeName { get; set; }
-        public string BindingKey { get; set; }
+        public string QueueName { get; set; }
     }
 }

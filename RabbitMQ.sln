@@ -3,13 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.34916.146
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Publisher", "Publisher\Publisher.csproj", "{51C765CB-01D8-4D33-ADED-7CBA048720DB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Shared", "Shared\Shared.csproj", "{250ECF6E-45E3-476F-B8A6-53094248C01B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Consumer1", "Consumer\Consumer1.csproj", "{4D8CDC2A-5582-428A-95D5-87CCA542271B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Consumer\Client.csproj", "{4D8CDC2A-5582-428A-95D5-87CCA542271B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Consumer2", "Consumer2\Consumer2.csproj", "{526F51AF-2EF7-4AAB-B62A-314CB807330A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Server", "Consumer2\Server.csproj", "{526F51AF-2EF7-4AAB-B62A-314CB807330A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{51C765CB-01D8-4D33-ADED-7CBA048720DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{51C765CB-01D8-4D33-ADED-7CBA048720DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{51C765CB-01D8-4D33-ADED-7CBA048720DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{51C765CB-01D8-4D33-ADED-7CBA048720DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{250ECF6E-45E3-476F-B8A6-53094248C01B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{250ECF6E-45E3-476F-B8A6-53094248C01B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{250ECF6E-45E3-476F-B8A6-53094248C01B}.Release|Any CPU.ActiveCfg = Release|Any CPU
