@@ -27,14 +27,17 @@ namespace Producer
             using var channel = connection.CreateModel();
 
 
-            channel.ExchangeDeclare(
-                    exchange: rabbitMQConfig.ExchangeName,
-                    type: ExchangeType.Direct);
-            
-            var message = "Hey Code Meters";
-            var body = Encoding.UTF8.GetBytes(message);
-            channel.BasicPublish(rabbitMQConfig.ExchangeName, "", null, body);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.FirstExchangeName, type: ExchangeType.Direct);
 
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.SecondExchangeName, type: ExchangeType.Fanout);
+
+            channel.ExchangeBind(rabbitMQConfig.SecondExchangeName, rabbitMQConfig.FirstExchangeName, "");
+
+            var message = "Hey Code Melters";
+
+            var body = Encoding.UTF8.GetBytes(message);
+
+            channel.BasicPublish(rabbitMQConfig.FirstExchangeName, "", null, body);
 
             Console.WriteLine($"Send message: {message}");
             Console.ReadLine();

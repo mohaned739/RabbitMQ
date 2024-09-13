@@ -28,45 +28,22 @@ namespace Consumer
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            channel.ExchangeDeclare(
-                exchange: rabbitMQConfig.ExchangeName,
-                type: ExchangeType.Direct);
+            channel.ExchangeDeclare(exchange: rabbitMQConfig.SecondExchangeName, type: ExchangeType.Fanout);
 
-            channel.ExchangeDeclare(
-                exchange: rabbitMQConfig.DLExchangeName,
-                type: ExchangeType.Fanout);
+            channel.QueueDeclare(rabbitMQConfig.QueueName);
 
-            var arguments = new Dictionary<string, object>{
-                {"x-dead-letter-exchange", rabbitMQConfig.DLExchangeName},
-                {"x-message-ttl", 1000},
-            };
-            channel.QueueDeclare(
-                queue: rabbitMQConfig.QueueName,
-                arguments: arguments);
+            channel.QueueBind(rabbitMQConfig.QueueName, rabbitMQConfig.SecondExchangeName, "");
 
-            channel.QueueBind(rabbitMQConfig.QueueName, rabbitMQConfig.ExchangeName, "");
+            var consumer = new EventingBasicConsumer(channel);
 
-            var mainConsumer = new EventingBasicConsumer(channel);
-            mainConsumer.Received += (model, ea) =>
+            consumer.Received += (model, ea) =>
             {
                 var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Main - Recieved new message: {message}");
+                Console.WriteLine($"Recieved new message: {message}");
             };
 
-            //channel.BasicConsume(queue: "mainexchangequeue", consumer: mainConsumer);
-
-            channel.QueueDeclare(queue: rabbitMQConfig.DLXQueueName);
-            channel.QueueBind(rabbitMQConfig.DLXQueueName, rabbitMQConfig.DLExchangeName, "");
-
-            var dlxConsumer = new EventingBasicConsumer(channel);
-            dlxConsumer.Received += (model, ea) =>
-            {
-                var body = ea.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"DLX - Recieved new message: {message}");
-            };
-            channel.BasicConsume(queue: rabbitMQConfig.DLXQueueName, consumer: dlxConsumer);
+            channel.BasicConsume(queue: rabbitMQConfig.QueueName, autoAck: true, consumer: consumer);
 
             Console.WriteLine("Consuming");
             Console.ReadLine();
