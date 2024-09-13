@@ -6,7 +6,7 @@ using RabbitMQ.Client.Events;
 using Shared.Configurations;
 using System.Text;
 
-namespace Client
+namespace Consumer
 {
     internal class Program
     {
@@ -28,32 +28,47 @@ namespace Client
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
-            var replyQueue = channel.QueueDeclare(queue: "", exclusive: true);
+            channel.ExchangeDeclare(
+                exchange: rabbitMQConfig.ExchangeName,
+                type: ExchangeType.Direct);
 
-            channel.QueueDeclare(queue: rabbitMQConfig.QueueName, exclusive: false);
+            channel.ExchangeDeclare(
+                exchange: rabbitMQConfig.DLExchangeName,
+                type: ExchangeType.Fanout);
 
-            var consumer = new EventingBasicConsumer(channel);
+            var arguments = new Dictionary<string, object>{
+                {"x-dead-letter-exchange", rabbitMQConfig.DLExchangeName},
+                {"x-message-ttl", 1000},
+            };
+            channel.QueueDeclare(
+                queue: rabbitMQConfig.QueueName,
+                arguments: arguments);
 
-            consumer.Received += (sender, args) =>
+            channel.QueueBind(rabbitMQConfig.QueueName, rabbitMQConfig.ExchangeName, "");
+
+            var mainConsumer = new EventingBasicConsumer(channel);
+            mainConsumer.Received += (model, ea) =>
             {
-                var body = args.Body.ToArray();
+                var body = ea.Body.ToArray();
                 var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Client Reply Recieved: {message}");
+                Console.WriteLine($"Main - Recieved new message: {message}");
             };
 
-            channel.BasicConsume(queue: replyQueue.QueueName, autoAck: true, consumer: consumer);
+            //channel.BasicConsume(queue: "mainexchangequeue", consumer: mainConsumer);
 
-            var properties = channel.CreateBasicProperties();
-            properties.ReplyTo = replyQueue.QueueName;
-            properties.CorrelationId = Guid.NewGuid().ToString();
+            channel.QueueDeclare(queue: rabbitMQConfig.DLXQueueName);
+            channel.QueueBind(rabbitMQConfig.DLXQueueName, rabbitMQConfig.DLExchangeName, "");
 
-            var message = "Hey Code Meters";
-            var body = Encoding.UTF8.GetBytes(message);
+            var dlxConsumer = new EventingBasicConsumer(channel);
+            dlxConsumer.Received += (model, ea) =>
+            {
+                var body = ea.Body.ToArray();
+                var message = Encoding.UTF8.GetString(body);
+                Console.WriteLine($"DLX - Recieved new message: {message}");
+            };
+            channel.BasicConsume(queue: rabbitMQConfig.DLXQueueName, consumer: dlxConsumer);
 
-            Console.WriteLine($"Client Sending Request: {message}\n{properties.CorrelationId}");
-
-            channel.BasicPublish("", rabbitMQConfig.QueueName, properties, body);
-
+            Console.WriteLine("Consuming");
             Console.ReadLine();
         }
     }

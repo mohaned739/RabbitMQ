@@ -4,7 +4,7 @@ using RabbitMQ.Client.Events;
 using Shared.Configurations;
 using System.Text;
 
-namespace Server
+namespace Producer
 {
     internal class Program
     {
@@ -26,24 +26,17 @@ namespace Server
             using var connection = factory.CreateConnection();
             using var channel = connection.CreateModel();
 
+
+            channel.ExchangeDeclare(
+                    exchange: rabbitMQConfig.QueueName,
+                    type: ExchangeType.Direct);
             
-            channel.QueueDeclare(queue: rabbitMQConfig.QueueName, exclusive: false);
+            var message = "Hey Code Meters";
+            var body = Encoding.UTF8.GetBytes(message);
+            channel.BasicPublish(rabbitMQConfig.ExchangeName, "", null, body);
 
-            var consumer = new EventingBasicConsumer(channel);
 
-            consumer.Received += (sender, args) =>
-            {
-                var body = args.Body.ToArray();
-                var message = Encoding.UTF8.GetString(body);
-                Console.WriteLine($"Server: Recieved Request: {message}\n{args.BasicProperties.CorrelationId}");
-                var replyMessage = $"Reply: Hope you are enjoying this playlist\n{args.BasicProperties.CorrelationId}";
-                var replyBody = Encoding.UTF8.GetBytes(replyMessage);
-                channel.BasicPublish("", args.BasicProperties.ReplyTo, null, replyBody);
-
-            };
-
-            channel.BasicConsume(queue: rabbitMQConfig.QueueName, autoAck: true, consumer: consumer);
-
+            Console.WriteLine($"Send message: {message}");
             Console.ReadLine();
         }
     }
