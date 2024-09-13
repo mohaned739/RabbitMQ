@@ -28,7 +28,7 @@ namespace Producer
 
 
             channel.ExchangeDeclare(
-                    exchange: rabbitMQConfig.QueueName,
+                    exchange: rabbitMQConfig.ExchangeName,
                     type: ExchangeType.Direct);
             
             var message = "Hey Code Meters";
