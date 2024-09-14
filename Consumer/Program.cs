@@ -33,8 +33,6 @@ namespace Consumer
                         });
                         cfg.ConfigureEndpoints(context);
                         cfg.Exclusive = false;
-                        cfg.ConcurrentMessageLimit = 1;
-
                     });
                 });
             });
