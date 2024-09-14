@@ -30,7 +30,6 @@ namespace Publisher
                     cfg.ConfigureEndpoints(context);
                     cfg.Exclusive = false;
                     cfg.Durable = true;
-                    cfg.ConcurrentMessageLimit = 1;
                 });
             });
 
